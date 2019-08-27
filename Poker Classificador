@@ -1,0 +1,26 @@
+import pandas as pd
+from keras.models import Sequential
+from keras.layers import Dense, Dropout
+from keras.wrappers.scikit_learn import KerasClassifier
+from sklearn.model_selection import cross_val_score
+
+base = pd.read_csv('poker-hand-testing.csv')
+
+previsores = base.iloc[:, 0:10].values
+classe = base.iloc[:, 10].values
+
+def rede():
+    classificador = Sequential()
+    classificador.add(Dense(units=20, activation='relu', kernel_initializer='normal', input_dim=10))
+    classificador.add(Dropout(0.2))
+    classificador.add(Dense(units=20, activation='relu', kernel_initializer='normal'))
+    classificador.add(Dropout(0.2))
+    classificador.add(Dense(units=10, activation='softmax'))
+    classificador.compile(optimizer='adam', loss='categorical_crossentropy',
+                          metrics=['categorical_accuracy'])
+    return classificador
+
+classificador = KerasClassifier(build_fn=rede, epochs=100, batch_size=10)
+resultados = cross_val_score(estimator=classificador, X=previsores, y=classe, cv=10, scoring='accuracy')
+media = resultados.mean()
+desvio = resultados.std()
